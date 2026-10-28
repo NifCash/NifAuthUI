@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { AppShell } from '../components/AppShell'
 
 export function ChangePasswordPage() {
   const { changePassword } = useAuth()
@@ -46,58 +46,46 @@ export function ChangePasswordPage() {
   }
 
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <p className="brand compact">NifCash</p>
-        <nav>
-          <Link to="/">Profil</Link>
-        </nav>
-      </header>
-
-      <main className="content narrow">
-        <h1>Parolu dəyiş</h1>
-        <p className="lede">Mövcud parolunuzu təsdiqləyin və yeni parol təyin edin.</p>
-
-        <form className="stack-form" onSubmit={onSubmit}>
-          <label>
-            Mövcud parol
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Yeni parol
-            <input
-              type="password"
-              autoComplete="new-password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              minLength={8}
-            />
-          </label>
-          <label>
-            Yeni parolu təsdiqlə
-            <input
-              type="password"
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              minLength={8}
-            />
-          </label>
-          {error ? <p className="form-error" role="alert">{error}</p> : null}
-          {success ? <p className="form-success" role="status">{success}</p> : null}
-          <button type="submit" disabled={submitting}>
-            {submitting ? 'Saxlanılır…' : 'Parolu yenilə'}
-          </button>
-        </form>
-      </main>
-    </div>
+    <AppShell title="Parolu dəyiş" lede="Mövcud parolunuzu təsdiqləyin və yeni parol təyin edin.">
+      <form className="stack-form panel narrow-form" onSubmit={onSubmit}>
+        <label>
+          Mövcud parol
+          <input
+            type="password"
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+          />
+        </label>
+        <label>
+          Yeni parol
+          <input
+            type="password"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+            minLength={8}
+          />
+        </label>
+        <label>
+          Yeni parolu təsdiqlə
+          <input
+            type="password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={8}
+          />
+        </label>
+        {error ? <p className="form-error" role="alert">{error}</p> : null}
+        {success ? <p className="form-success" role="status">{success}</p> : null}
+        <button type="submit" disabled={submitting}>
+          {submitting ? 'Saxlanılır…' : 'Parolu yenilə'}
+        </button>
+      </form>
+    </AppShell>
   )
 }

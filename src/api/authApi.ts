@@ -14,6 +14,7 @@ export type MeResponse = {
   isSuperAdmin: boolean
   roles: string[]
   permissions: string[]
+  organizationId?: string | null
   canOperate: boolean
 }
 

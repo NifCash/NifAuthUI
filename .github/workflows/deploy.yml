@@ -1,0 +1,71 @@
+name: Deploy UI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: nifauth-ui-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: SSH build + deploy AuthUI
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          DEPLOY_REPO_URL: ${{ secrets.DEPLOY_REPO_URL }}
+          DEPLOY_REPO_DIR: ${{ secrets.DEPLOY_REPO_DIR }}
+          DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          script_stop: true
+          command_timeout: 25m
+          envs: GH_PAT,DEPLOY_REPO_URL,DEPLOY_REPO_DIR,DEPLOY_BRANCH
+          script: |
+            set -euo pipefail
+
+            REPO_DIR="${DEPLOY_REPO_DIR:-/opt/nifauth-ui/src}"
+            REPO_URL="${DEPLOY_REPO_URL:-https://github.com/NifCash/NifAuthUI.git}"
+            BRANCH="${DEPLOY_BRANCH:-main}"
+
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -y
+            apt-get install -y git curl ca-certificates rsync nginx
+
+            mkdir -p "$(dirname "$REPO_DIR")"
+
+            if [[ ! -d "$REPO_DIR/.git" ]]; then
+              echo "==> Cloning repository"
+              if [[ -n "${GH_PAT:-}" ]]; then
+                AUTH_URL="$(echo "$REPO_URL" | sed "s#https://#https://x-access-token:${GH_PAT}@#")"
+                git clone --branch "$BRANCH" "$AUTH_URL" "$REPO_DIR"
+              else
+                git clone --branch "$BRANCH" "$REPO_URL" "$REPO_DIR"
+              fi
+            fi
+
+            cd "$REPO_DIR"
+
+            echo "==> Fetch / reset to origin/$BRANCH"
+            if [[ -n "${GH_PAT:-}" ]]; then
+              git remote set-url origin "$(echo "$REPO_URL" | sed "s#https://#https://x-access-token:${GH_PAT}@#")"
+            else
+              git remote set-url origin "$REPO_URL"
+            fi
+            git fetch --prune origin
+            git checkout "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+            git clean -fd -e node_modules -e dist -e .publish
+
+            chmod +x scripts/deploy-remote.sh
+            REPO_DIR="$REPO_DIR" bash scripts/deploy-remote.sh

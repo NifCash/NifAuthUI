@@ -27,6 +27,7 @@ type AuthContextValue = {
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
+  refreshUser: () => Promise<void>
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>
   accessToken: string | null
 }
@@ -91,6 +92,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const refreshUser = useCallback(async () => {
+    const token = getAccessToken()
+    if (!token) return
+    setUser(await fetchMe(token))
+  }, [])
+
   const changePassword = useCallback(
     async (currentPassword: string, newPassword: string) => {
       const token = getAccessToken()
@@ -101,8 +108,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo(
-    () => ({ user, loading, login, logout, changePassword, accessToken }),
-    [user, loading, login, logout, changePassword, accessToken],
+    () => ({ user, loading, login, logout, refreshUser, changePassword, accessToken }),
+    [user, loading, login, logout, refreshUser, changePassword, accessToken],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
