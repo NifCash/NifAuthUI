@@ -6,11 +6,7 @@ export function HomePage() {
   const { user } = useAuth()
   if (!user) return null
 
-  const canRequestOrg =
-    !user.organizationId &&
-    (user.roles.length === 0 ||
-      user.permissions.includes('org.request.create') ||
-      user.permissions.includes('*'))
+  const canRequestOrg = !user.isSuperAdmin && !user.organizationId && user.roles.length === 0
 
   return (
     <AppShell title={`Salam, ${user.fullName}`} lede={user.email}>

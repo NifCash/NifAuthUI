@@ -146,8 +146,9 @@ export function listOrgRoles(organizationId: string) {
   return apiJson<RoleDto[]>(`/api/organizations/${organizationId}/roles`)
 }
 
-export function listPermissions() {
-  return apiJson<PermissionDto[]>('/api/roles/permissions')
+export function listPermissions(opts?: { forOrganization?: boolean }) {
+  const q = opts?.forOrganization ? '?forOrganization=true' : ''
+  return apiJson<PermissionDto[]>(`/api/roles/permissions${q}`)
 }
 
 export function createCustomRole(body: {

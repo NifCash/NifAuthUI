@@ -40,7 +40,7 @@ export function OrgRolesPage() {
     if (!organizationId) return
     const [r, p, a] = await Promise.all([
       listOrgRoles(organizationId),
-      listPermissions(),
+      listPermissions({ forOrganization: true }),
       listOrgAssignments(organizationId),
     ])
     setRoles(r)

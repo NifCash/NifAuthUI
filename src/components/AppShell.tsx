@@ -14,13 +14,12 @@ export function AppShell({ children, title, lede }: Props) {
 
   const isSuperAdmin = user.isSuperAdmin
   const isOrgAdmin = user.roles.includes('SuperOrgAdmin')
-  const canRequestOrg =
-    !user.organizationId &&
-    (user.roles.length === 0 ||
-      user.permissions.includes('org.request.create') ||
-      user.permissions.includes('*'))
+  // Only role-less customers (never SuperAdmin / OrgAdmin).
+  const canRequestOrg = !isSuperAdmin && !user.organizationId && user.roles.length === 0
+  // Global approve permission — SuperOrgAdmin never receives this permission.
   const canApproveOrg =
-    isSuperAdmin || user.permissions.includes('org.request.approve') || user.permissions.includes('*')
+    isSuperAdmin ||
+    (!isOrgAdmin && (user.permissions.includes('org.request.approve') || user.permissions.includes('*')))
   const canApproveBranch =
     isSuperAdmin || user.permissions.includes('branch.request.approve') || user.permissions.includes('*')
 
