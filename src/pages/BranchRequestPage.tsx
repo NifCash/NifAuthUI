@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { AppShell } from '../components/AppShell'
 import { useAuth } from '../auth/AuthContext'
+import { getCapabilities } from '../auth/capabilities'
 import {
   listBranchRequests,
   submitBranchRequest,
@@ -9,6 +10,7 @@ import {
 
 export function BranchRequestPage() {
   const { user } = useAuth()
+  const caps = getCapabilities(user)
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
   const [items, setItems] = useState<BranchCreateRequestDto[]>([])
@@ -31,7 +33,7 @@ export function BranchRequestPage() {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
-    if (!organizationId) return
+    if (!organizationId || !caps.canRequestBranch) return
     setError(null)
     setSuccess(null)
     setSubmitting(true)
@@ -61,21 +63,25 @@ export function BranchRequestPage() {
       title="Branch request"
       lede="Yeni branch üçün request göndərin. Təsdiq ayrı permission-dur."
     >
-      <form className="stack-form panel" onSubmit={onSubmit}>
-        <label>
-          Ad
-          <input value={name} onChange={(e) => setName(e.target.value)} required />
-        </label>
-        <label>
-          Kod
-          <input value={code} onChange={(e) => setCode(e.target.value)} required />
-        </label>
-        {error ? <p className="form-error">{error}</p> : null}
-        {success ? <p className="form-success">{success}</p> : null}
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'Göndərilir…' : 'Request göndər'}
-        </button>
-      </form>
+      {caps.canRequestBranch ? (
+        <form className="stack-form panel" onSubmit={onSubmit}>
+          <label>
+            Ad
+            <input value={name} onChange={(e) => setName(e.target.value)} required />
+          </label>
+          <label>
+            Kod
+            <input value={code} onChange={(e) => setCode(e.target.value)} required />
+          </label>
+          {error ? <p className="form-error">{error}</p> : null}
+          {success ? <p className="form-success">{success}</p> : null}
+          <button type="submit" disabled={submitting}>
+            {submitting ? 'Göndərilir…' : 'Request göndər'}
+          </button>
+        </form>
+      ) : (
+        <p className="muted">Bu əməliyyat üçün icazəniz yoxdur.</p>
+      )}
 
       <section className="table-section">
         <h2>Mənim branch request-lərim</h2>

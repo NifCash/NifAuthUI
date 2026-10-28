@@ -50,7 +50,7 @@ export function AdminBranchRequestsPage() {
   }
 
   return (
-    <AppShell title="Branch request təsdiqi" lede="SuperOrgAdmin branch request-lərini təsdiq/imtina edin.">
+    <AppShell title="Branch request təsdiqi" lede="branch.request.approve icazəsi olan istifadəçilər təsdiq/imtina edə bilər.">
       {error ? <p className="form-error">{error}</p> : null}
       {!items.length ? <p className="muted">Gözləyən request yoxdur.</p> : null}
       <div className="table-wrap">

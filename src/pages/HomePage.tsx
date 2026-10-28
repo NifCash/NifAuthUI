@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { getCapabilities } from '../auth/capabilities'
 import { AppShell } from '../components/AppShell'
 
 export function HomePage() {
   const { user } = useAuth()
   if (!user) return null
 
-  const canRequestOrg = !user.isSuperAdmin && !user.organizationId && user.roles.length === 0
+  const caps = getCapabilities(user)
 
   return (
     <AppShell title={`Salam, ${user.fullName}`} lede={user.email}>
@@ -30,19 +31,34 @@ export function HomePage() {
       </dl>
 
       <div className="action-links">
-        {canRequestOrg ? (
+        {caps.canRequestOrg ? (
           <Link className="action-card" to="/org-request">
             Organization yaratmaq üçün request
           </Link>
         ) : null}
-        {user.roles.includes('SuperOrgAdmin') ? (
+        {caps.canManageOrg ? (
           <Link className="action-card" to="/my-org">
             Organization idarəetmə
           </Link>
         ) : null}
-        {user.isSuperAdmin ? (
+        {caps.canManageRoles ? (
+          <Link className="action-card" to="/my-org/roles">
+            Rol və permission idarəetmə
+          </Link>
+        ) : null}
+        {caps.canRequestBranch ? (
+          <Link className="action-card" to="/my-org/branch-request">
+            Yeni branch request
+          </Link>
+        ) : null}
+        {caps.canApproveOrg ? (
           <Link className="action-card" to="/admin/org-requests">
             Gözləyən org request-lər
+          </Link>
+        ) : null}
+        {caps.canApproveBranch ? (
+          <Link className="action-card" to="/admin/branch-requests">
+            Gözləyən branch request-lər
           </Link>
         ) : null}
       </div>

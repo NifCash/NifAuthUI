@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { useAuth } from '../auth/AuthContext'
+import { getCapabilities } from '../auth/capabilities'
 import {
   getMyOrganization,
   listBranches,
@@ -11,6 +12,7 @@ import {
 
 export function MyOrgPage() {
   const { user } = useAuth()
+  const caps = getCapabilities(user)
   const [org, setOrg] = useState<OrganizationDto | null>(null)
   const [branches, setBranches] = useState<BranchDto[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -45,14 +47,20 @@ export function MyOrgPage() {
             </div>
           </dl>
 
-          <div className="action-links">
-            <Link className="action-card" to="/my-org/roles">
-              Rol və permission idarəetmə
-            </Link>
-            <Link className="action-card" to="/my-org/branch-request">
-              Yeni branch request
-            </Link>
-          </div>
+          {caps.canManageRoles || caps.canRequestBranch ? (
+            <div className="action-links">
+              {caps.canManageRoles ? (
+                <Link className="action-card" to="/my-org/roles">
+                  Rol və permission idarəetmə
+                </Link>
+              ) : null}
+              {caps.canRequestBranch ? (
+                <Link className="action-card" to="/my-org/branch-request">
+                  Yeni branch request
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
 
           <section className="table-section">
             <h2>Branches</h2>

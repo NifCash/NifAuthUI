@@ -2,9 +2,11 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { AppShell } from '../components/AppShell'
 import { listOrgRequests, submitOrgRequest, type OrganizationCreateRequestDto } from '../api/orgApi'
 import { useAuth } from '../auth/AuthContext'
+import { getCapabilities } from '../auth/capabilities'
 
 export function OrgRequestPage() {
   const { user } = useAuth()
+  const caps = getCapabilities(user)
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -24,6 +26,7 @@ export function OrgRequestPage() {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
+    if (!caps.canRequestOrg) return
     setError(null)
     setSuccess(null)
     setSubmitting(true)
@@ -40,34 +43,30 @@ export function OrgRequestPage() {
     }
   }
 
-  if (user?.organizationId) {
-    return (
-      <AppShell title="Organization request" lede="Sizin artıq organization-ınız var.">
-        <p className="muted">Bir user yalnız bir organization-a sahib ola bilər.</p>
-      </AppShell>
-    )
-  }
-
   return (
     <AppShell
       title="Organization request"
-      lede="Adi user request aça bilər. SuperAdmin təsdiq və ya imtina edir."
+      lede="Rol-suz istifadəçi org yaratmaq üçün request aça bilər."
     >
-      <form className="stack-form panel" onSubmit={onSubmit}>
-        <label>
-          Ad
-          <input value={name} onChange={(e) => setName(e.target.value)} required />
-        </label>
-        <label>
-          Kod
-          <input value={code} onChange={(e) => setCode(e.target.value)} required />
-        </label>
-        {error ? <p className="form-error">{error}</p> : null}
-        {success ? <p className="form-success">{success}</p> : null}
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'Göndərilir…' : 'Request göndər'}
-        </button>
-      </form>
+      {caps.canRequestOrg ? (
+        <form className="stack-form panel" onSubmit={onSubmit}>
+          <label>
+            Ad
+            <input value={name} onChange={(e) => setName(e.target.value)} required />
+          </label>
+          <label>
+            Kod
+            <input value={code} onChange={(e) => setCode(e.target.value)} required />
+          </label>
+          {error ? <p className="form-error">{error}</p> : null}
+          {success ? <p className="form-success">{success}</p> : null}
+          <button type="submit" disabled={submitting}>
+            {submitting ? 'Göndərilir…' : 'Request göndər'}
+          </button>
+        </form>
+      ) : (
+        <p className="muted">Bu əməliyyat üçün icazəniz yoxdur.</p>
+      )}
 
       <section className="table-section">
         <h2>Mənim request-lərim</h2>
