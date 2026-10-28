@@ -6,6 +6,8 @@ on:
   workflow_dispatch:
 
 concurrency:
+  # Same logical server lock group name as API (GitHub concurrency is per-repo,
+  # so we also flock on the server in the SSH script).
   group: nifauth-ui-deploy
   cancel-in-progress: false
 
@@ -34,13 +36,37 @@ jobs:
           script: |
             set -euo pipefail
 
+            # Serialize with API deploy on the same machine.
+            exec 9>/var/lock/nifauth-deploy.lock
+            flock -w 900 9
+
+            wait_apt() {
+              while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 \
+                 || fuser /var/lib/apt/lists/lock >/dev/null 2>&1 \
+                 || fuser /var/lib/dpkg/lock >/dev/null 2>&1; do
+                echo "Waiting for apt lock..."
+                sleep 5
+              done
+            }
+
+            ensure_pkgs() {
+              local missing=()
+              for p in "$@"; do
+                dpkg -s "$p" >/dev/null 2>&1 || missing+=("$p")
+              done
+              if ((${#missing[@]})); then
+                wait_apt
+                export DEBIAN_FRONTEND=noninteractive
+                apt-get update -y
+                apt-get install -y "${missing[@]}"
+              fi
+            }
+
             REPO_DIR="${DEPLOY_REPO_DIR:-/opt/nifauth-ui/src}"
             REPO_URL="${DEPLOY_REPO_URL:-https://github.com/NifCash/NifAuthUI.git}"
             BRANCH="${DEPLOY_BRANCH:-main}"
 
-            export DEBIAN_FRONTEND=noninteractive
-            apt-get update -y
-            apt-get install -y git curl ca-certificates rsync nginx
+            ensure_pkgs git curl ca-certificates rsync nginx
 
             mkdir -p "$(dirname "$REPO_DIR")"
 

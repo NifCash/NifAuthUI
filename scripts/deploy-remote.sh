@@ -22,7 +22,7 @@ npm ci
 npm run build
 
 mkdir -p "$UI_DIR" "$BUILD_DIR"
-rm -rf "$BUILD_DIR"/*
+rm -rf "${BUILD_DIR:?}/"*
 cp -a dist/. "$BUILD_DIR/"
 
 echo "==> Sync static files"
