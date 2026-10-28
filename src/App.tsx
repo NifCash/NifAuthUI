@@ -11,6 +11,7 @@ import { LoginPage } from './pages/LoginPage'
 import { MyOrgPage } from './pages/MyOrgPage'
 import { OrgRequestPage } from './pages/OrgRequestPage'
 import { OrgRolesPage } from './pages/OrgRolesPage'
+import { RegisterPage } from './pages/RegisterPage'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/change-password" element={<ChangePasswordPage />} />

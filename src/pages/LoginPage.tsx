@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 
 export function LoginPage() {
@@ -62,6 +62,10 @@ export function LoginPage() {
             {submitting ? 'Giriş…' : 'Daxil ol'}
           </button>
         </form>
+
+        <p className="auth-switch">
+          Hesabınız yoxdur? <Link to="/register">Qeydiyyat</Link>
+        </p>
       </main>
     </div>
   )

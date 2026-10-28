@@ -32,6 +32,30 @@ async function readError(response: Response): Promise<string> {
   }
 }
 
+export type RegisterResponse = {
+  userId: string
+  email: string
+  fullName: string
+}
+
+export async function register(
+  email: string,
+  password: string,
+  fullName: string,
+): Promise<RegisterResponse> {
+  const response = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ email, password, fullName }),
+  })
+
+  if (!response.ok) {
+    throw new Error(await readError(response))
+  }
+
+  return (await response.json()) as RegisterResponse
+}
+
 export async function login(email: string, password: string): Promise<TokenResponse> {
   const response = await fetch('/api/auth/login', {
     method: 'POST',
