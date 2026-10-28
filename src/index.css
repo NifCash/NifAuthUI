@@ -1,0 +1,284 @@
+:root {
+  --ink: #10231f;
+  --ink-soft: #3a524c;
+  --paper: #f3f7f4;
+  --panel: rgba(255, 255, 255, 0.86);
+  --accent: #0f7a5f;
+  --accent-deep: #0a5543;
+  --line: rgba(16, 35, 31, 0.12);
+  --danger: #9b2c2c;
+  --ok: #1b6b3a;
+  --shadow: 0 24px 60px rgba(16, 35, 31, 0.18);
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: var(--font-body);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--accent-deep);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.brand {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.brand.compact {
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+}
+
+h1 {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.lede {
+  margin: 0.75rem 0 0;
+  color: var(--ink-soft);
+  max-width: 36rem;
+  line-height: 1.55;
+}
+
+.muted {
+  color: var(--ink-soft);
+}
+
+.page-shell.center {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.auth-stage {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.auth-atmosphere {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 12% 18%, rgba(15, 122, 95, 0.28), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 88% 78%, rgba(16, 35, 31, 0.18), transparent 55%),
+    linear-gradient(155deg, #e8f2ed 0%, #f7faf8 48%, #dfece6 100%);
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.04) translate3d(-1.5%, 1%, 0);
+  }
+}
+
+.auth-panel {
+  position: relative;
+  width: min(100%, 420px);
+  padding: 2.25rem 2rem 2rem;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  animation: rise 0.7s ease both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stack-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.75rem;
+}
+
+.stack-form label {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.stack-form input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  font: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stack-form input:focus {
+  outline: none;
+  border-color: rgba(15, 122, 95, 0.55);
+  box-shadow: 0 0 0 3px rgba(15, 122, 95, 0.15);
+}
+
+.stack-form button,
+button.linkish {
+  font: inherit;
+  cursor: pointer;
+}
+
+.stack-form button {
+  margin-top: 0.25rem;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: #fff;
+  font-weight: 700;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.stack-form button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.stack-form button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.form-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.92rem;
+}
+
+.form-success {
+  margin: 0;
+  color: var(--ok);
+  font-size: 0.92rem;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 50% 40% at 100% 0%, rgba(15, 122, 95, 0.12), transparent 55%),
+    linear-gradient(180deg, #f7faf8, #eef4f1);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.topbar nav {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+button.linkish {
+  border: 0;
+  background: transparent;
+  color: var(--accent-deep);
+  font-weight: 600;
+  padding: 0;
+}
+
+button.linkish:hover {
+  text-decoration: underline;
+}
+
+.content {
+  width: min(920px, calc(100% - 2.5rem));
+  margin: 2.25rem auto 3rem;
+  animation: rise 0.55s ease both;
+}
+
+.content.narrow {
+  width: min(480px, calc(100% - 2.5rem));
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem 1.5rem;
+  margin: 2rem 0 0;
+}
+
+.profile-grid div {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.profile-grid dt {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.profile-grid dd {
+  margin: 0.35rem 0 0;
+  font-weight: 650;
+}
+
+@media (max-width: 640px) {
+  .auth-panel {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .topbar {
+    padding-inline: 1rem;
+  }
+}
