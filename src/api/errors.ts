@@ -8,6 +8,8 @@ export const ERROR_MESSAGES = {
   invalidCredentials: 'Email və ya parol səhvdir.',
   emptyCredentials: 'Email və parolu daxil et.',
   forbidden: 'Bu əməliyyat üçün icazən yoxdur.',
+  tooManyRequests: 'Çox cəhd edildi, bir az sonra yenə yoxla.',
+  checkInput: 'Məlumatları yoxla.',
   generic: 'Xəta baş verdi. Yenidən cəhd et.',
 } as const
 
@@ -26,29 +28,49 @@ export class ApiRequestError extends Error {
   }
 }
 
+/** Parsed JSON error body. ProblemDetails (validation) bodies have no `error` field. */
+export type ErrorBody = {
+  error?: string | null
+  error_description?: string | null
+}
+
 /**
- * Maps an HTTP status (and optional server-provided description) to a
- * user-facing message. `status` 0 means the request never reached the server.
+ * Maps an HTTP status (and optional parsed error body) to a user-facing
+ * message. `status` 0 means the request never reached the server.
+ *
+ * Login rules: the API deliberately returns the same 401 `invalid_credentials`
+ * for unknown email, inactive account and wrong password, so all of them map
+ * to one message. A 400 only means bad credentials when `error` is
+ * `invalid_grant`; a 400 without `error` is a validation (ProblemDetails)
+ * response.
  */
 export function messageForStatus(
   status: number,
   context: ErrorContext = 'default',
-  serverDescription?: string | null,
+  body?: ErrorBody | null,
 ): string {
   if (status === 0) return ERROR_MESSAGES.network
   if (status >= 500) return ERROR_MESSAGES.server
-  if (context === 'login' && (status === 400 || status === 401)) {
-    return ERROR_MESSAGES.invalidCredentials
+  if (status === 429) return ERROR_MESSAGES.tooManyRequests
+  const code = body?.error || undefined
+  if (context === 'login') {
+    if (status === 401 || code === 'invalid_credentials') return ERROR_MESSAGES.invalidCredentials
+    if (status === 400) {
+      if (code === 'invalid_grant') return ERROR_MESSAGES.invalidCredentials
+      if (!code) return ERROR_MESSAGES.checkInput
+      return ERROR_MESSAGES.generic
+    }
   }
   if (status === 403) return ERROR_MESSAGES.forbidden
   // Domain validation errors (e.g. "code already exists") carry an explicit
-  // description from the API; keep it so forms stay informative.
+  // description from the API; keep it so non-login forms stay informative.
+  const description = body?.error_description || body?.error
   if (
     context !== 'login' &&
-    serverDescription &&
+    description &&
     (status === 400 || status === 404 || status === 409 || status === 422)
   ) {
-    return serverDescription
+    return description
   }
   return ERROR_MESSAGES.generic
 }
