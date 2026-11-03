@@ -1,3 +1,5 @@
+import { parseJson, safeFetch, toApiError } from './client'
+
 export type TokenResponse = {
   access_token: string
   refresh_token?: string
@@ -18,20 +20,6 @@ export type MeResponse = {
   canOperate: boolean
 }
 
-export type ApiError = {
-  error?: string
-  error_description?: string
-}
-
-async function readError(response: Response): Promise<string> {
-  try {
-    const data = (await response.json()) as ApiError
-    return data.error_description || data.error || response.statusText
-  } catch {
-    return response.statusText || 'Request failed'
-  }
-}
-
 export type RegisterResponse = {
   userId: string
   email: string
@@ -43,35 +31,35 @@ export async function register(
   password: string,
   fullName: string,
 ): Promise<RegisterResponse> {
-  const response = await fetch('/api/auth/register', {
+  const response = await safeFetch('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ email, password, fullName }),
   })
 
   if (!response.ok) {
-    throw new Error(await readError(response))
+    throw await toApiError(response)
   }
 
-  return (await response.json()) as RegisterResponse
+  return parseJson<RegisterResponse>(response)
 }
 
 export async function login(email: string, password: string): Promise<TokenResponse> {
-  const response = await fetch('/api/auth/login', {
+  const response = await safeFetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ email, password }),
   })
 
   if (!response.ok) {
-    throw new Error(await readError(response))
+    throw await toApiError(response, 'login')
   }
 
-  return (await response.json()) as TokenResponse
+  return parseJson<TokenResponse>(response)
 }
 
 export async function fetchMe(accessToken: string): Promise<MeResponse> {
-  const response = await fetch('/api/auth/me', {
+  const response = await safeFetch('/api/auth/me', {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: 'application/json',
@@ -79,10 +67,10 @@ export async function fetchMe(accessToken: string): Promise<MeResponse> {
   })
 
   if (!response.ok) {
-    throw new Error(await readError(response))
+    throw await toApiError(response)
   }
 
-  return (await response.json()) as MeResponse
+  return parseJson<MeResponse>(response)
 }
 
 export async function changePassword(
@@ -90,7 +78,7 @@ export async function changePassword(
   currentPassword: string,
   newPassword: string,
 ): Promise<void> {
-  const response = await fetch('/api/auth/change-password', {
+  const response = await safeFetch('/api/auth/change-password', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -101,7 +89,7 @@ export async function changePassword(
   })
 
   if (!response.ok) {
-    throw new Error(await readError(response))
+    throw await toApiError(response)
   }
 }
 
@@ -112,7 +100,7 @@ export async function refreshToken(refreshTokenValue: string): Promise<TokenResp
     client_id: 'nifcash.swagger',
   })
 
-  const response = await fetch('/connect/token', {
+  const response = await safeFetch('/connect/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -122,8 +110,8 @@ export async function refreshToken(refreshTokenValue: string): Promise<TokenResp
   })
 
   if (!response.ok) {
-    throw new Error(await readError(response))
+    throw await toApiError(response)
   }
 
-  return (await response.json()) as TokenResponse
+  return parseJson<TokenResponse>(response)
 }

@@ -1,16 +1,51 @@
 import { getAccessToken } from '../auth/tokenStorage'
+import { ApiRequestError, ERROR_MESSAGES, messageForStatus, type ErrorContext } from './errors'
 
 export type ApiError = {
   error?: string
   error_description?: string
 }
 
-export async function readError(response: Response): Promise<string> {
+/**
+ * Wraps `fetch` so a transport failure (TypeError such as "Load failed" or
+ * "Failed to fetch") becomes an ApiRequestError with a user-facing message.
+ */
+export async function safeFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   try {
-    const data = (await response.json()) as ApiError
-    return data.error_description || data.error || response.statusText
+    return await fetch(input, init)
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') throw err
+    console.error('[api] network error', input, err)
+    const detail = err instanceof Error ? err.message : String(err)
+    throw new ApiRequestError(ERROR_MESSAGES.network, 0, detail)
+  }
+}
+
+/** Builds a user-safe error from a non-OK response; technical detail goes to console. */
+export async function toApiError(
+  response: Response,
+  context: ErrorContext = 'default',
+): Promise<ApiRequestError> {
+  let description: string | undefined
+  let raw = ''
+  try {
+    raw = await response.text()
+    const data = JSON.parse(raw) as ApiError
+    description = data.error_description || data.error || undefined
   } catch {
-    return response.statusText || 'Request failed'
+    // Body was empty or not JSON; keep raw text for the console only.
+  }
+  const detail = `${response.status} ${response.statusText} ${raw}`.trim()
+  console.error('[api] request failed', response.url, detail)
+  return new ApiRequestError(messageForStatus(response.status, context, description), response.status, detail)
+}
+
+export async function parseJson<T>(response: Response): Promise<T> {
+  try {
+    return (await response.json()) as T
+  } catch (err) {
+    console.error('[api] invalid JSON response', response.url, err)
+    throw new ApiRequestError(ERROR_MESSAGES.generic, response.status, String(err))
   }
 }
 
@@ -23,12 +58,12 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
     headers.set('Content-Type', 'application/json')
   }
 
-  return fetch(path, { ...init, headers })
+  return safeFetch(path, { ...init, headers })
 }
 
 export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await apiFetch(path, init)
-  if (!response.ok) throw new Error(await readError(response))
+  if (!response.ok) throw await toApiError(response)
   if (response.status === 204) return undefined as T
-  return (await response.json()) as T
+  return parseJson<T>(response)
 }
