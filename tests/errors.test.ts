@@ -39,11 +39,24 @@ test('non-login validation errors keep the server description', () => {
   assert.equal(messageForStatus(409, 'default', 'Kod artıq mövcuddur'), 'Kod artıq mövcuddur')
 })
 
-test('toUserMessage handles fetch TypeError ("Load failed") and unknown errors', () => {
-  assert.equal(toUserMessage(new TypeError('Load failed')), ERROR_MESSAGES.network)
-  assert.equal(toUserMessage(new TypeError('Failed to fetch')), ERROR_MESSAGES.network)
+test('toUserMessage maps unknown errors to generic message', () => {
   assert.equal(toUserMessage(new Error('Internal Server Error')), ERROR_MESSAGES.generic)
   assert.equal(toUserMessage('boom'), ERROR_MESSAGES.generic)
+})
+
+test('toUserMessage does not disguise TypeError as a network error', () => {
+  // safeFetch already wraps fetch failures in ApiRequestError(status 0), so a
+  // raw TypeError here is a code bug (e.g. undefined.map), not "no connection".
+  assert.equal(toUserMessage(new TypeError('Load failed')), ERROR_MESSAGES.generic)
+  assert.equal(
+    toUserMessage(new TypeError("Cannot read properties of undefined (reading 'map')")),
+    ERROR_MESSAGES.generic,
+  )
+})
+
+test('toUserMessage shows network message for ApiRequestError with status 0', () => {
+  const err = new ApiRequestError(messageForStatus(0), 0, 'Failed to fetch')
+  assert.equal(toUserMessage(err), ERROR_MESSAGES.network)
 })
 
 test('toUserMessage passes through ApiRequestError message', () => {

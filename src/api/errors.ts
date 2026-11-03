@@ -53,14 +53,13 @@ export function messageForStatus(
   return ERROR_MESSAGES.generic
 }
 
-/** True when `fetch` itself failed (offline, DNS, CORS, "Load failed", …). */
-export function isNetworkError(err: unknown): boolean {
-  return err instanceof TypeError
-}
-
-/** Returns a message that is safe to show for any thrown value. */
+/**
+ * Returns a message that is safe to show for any thrown value.
+ * Network failures are already converted to ApiRequestError (status 0) in
+ * `safeFetch`, so any other error (including TypeError) is a code bug and
+ * gets the generic message instead of being disguised as "no connection".
+ */
 export function toUserMessage(err: unknown): string {
   if (err instanceof ApiRequestError) return err.message
-  if (isNetworkError(err)) return ERROR_MESSAGES.network
   return ERROR_MESSAGES.generic
 }
