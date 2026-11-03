@@ -14,14 +14,42 @@ test('network failure (status 0) maps to connection message', () => {
 
 test('5xx maps to server message and never leaks English text', () => {
   for (const status of [500, 502, 503]) {
-    assert.equal(messageForStatus(status, 'login', 'Internal Server Error'), ERROR_MESSAGES.server)
-    assert.equal(messageForStatus(status, 'default', 'Internal Server Error'), ERROR_MESSAGES.server)
+    const body = { error: 'Internal Server Error' }
+    assert.equal(messageForStatus(status, 'login', body), ERROR_MESSAGES.server)
+    assert.equal(messageForStatus(status, 'default', body), ERROR_MESSAGES.server)
   }
 })
 
-test('login 400/401 maps to invalid credentials', () => {
-  assert.equal(messageForStatus(400, 'login', 'invalid_grant'), ERROR_MESSAGES.invalidCredentials)
+test('login 401 and invalid_credentials map to invalid credentials', () => {
   assert.equal(messageForStatus(401, 'login'), ERROR_MESSAGES.invalidCredentials)
+  assert.equal(
+    messageForStatus(401, 'login', { error: 'invalid_credentials' }),
+    ERROR_MESSAGES.invalidCredentials,
+  )
+})
+
+test('login 400 invalid_grant maps to invalid credentials', () => {
+  assert.equal(
+    messageForStatus(400, 'login', { error: 'invalid_grant' }),
+    ERROR_MESSAGES.invalidCredentials,
+  )
+})
+
+test('login 400 without error field (ProblemDetails) asks to check input', () => {
+  assert.equal(messageForStatus(400, 'login'), ERROR_MESSAGES.checkInput)
+  assert.equal(messageForStatus(400, 'login', {}), ERROR_MESSAGES.checkInput)
+})
+
+test('login 400 with another error code is not disguised as wrong password', () => {
+  assert.equal(
+    messageForStatus(400, 'login', { error: 'unsupported_grant_type' }),
+    ERROR_MESSAGES.generic,
+  )
+})
+
+test('429 maps to too-many-requests message in every context', () => {
+  assert.equal(messageForStatus(429, 'login'), ERROR_MESSAGES.tooManyRequests)
+  assert.equal(messageForStatus(429, 'default'), ERROR_MESSAGES.tooManyRequests)
 })
 
 test('403 maps to forbidden', () => {
@@ -31,12 +59,15 @@ test('403 maps to forbidden', () => {
 
 test('other statuses fall back to generic message', () => {
   assert.equal(messageForStatus(401), ERROR_MESSAGES.generic)
-  assert.equal(messageForStatus(429, 'default', 'Too Many Requests'), ERROR_MESSAGES.generic)
+  assert.equal(messageForStatus(418, 'default', { error: 'teapot' }), ERROR_MESSAGES.generic)
   assert.equal(messageForStatus(400), ERROR_MESSAGES.generic)
 })
 
 test('non-login validation errors keep the server description', () => {
-  assert.equal(messageForStatus(409, 'default', 'Kod artıq mövcuddur'), 'Kod artıq mövcuddur')
+  assert.equal(
+    messageForStatus(409, 'default', { error_description: 'Kod artıq mövcuddur' }),
+    'Kod artıq mövcuddur',
+  )
 })
 
 test('toUserMessage maps unknown errors to generic message', () => {

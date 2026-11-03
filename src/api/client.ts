@@ -26,18 +26,18 @@ export async function toApiError(
   response: Response,
   context: ErrorContext = 'default',
 ): Promise<ApiRequestError> {
-  let description: string | undefined
+  let body: ApiError | undefined
   let raw = ''
   try {
     raw = await response.text()
-    const data = JSON.parse(raw) as ApiError
-    description = data.error_description || data.error || undefined
+    const data: unknown = JSON.parse(raw)
+    if (data && typeof data === 'object') body = data as ApiError
   } catch {
     // Body was empty or not JSON; keep raw text for the console only.
   }
   const detail = `${response.status} ${response.statusText} ${raw}`.trim()
   console.error('[api] request failed', response.url, detail)
-  return new ApiRequestError(messageForStatus(response.status, context, description), response.status, detail)
+  return new ApiRequestError(messageForStatus(response.status, context, body), response.status, detail)
 }
 
 export async function parseJson<T>(response: Response): Promise<T> {
