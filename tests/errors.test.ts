@@ -70,6 +70,17 @@ test('non-login validation errors keep the server description', () => {
   )
 })
 
+test('non-login bare error code is not shown to the user', () => {
+  assert.equal(
+    messageForStatus(400, 'default', { error: 'invalid_request' }),
+    ERROR_MESSAGES.generic,
+  )
+  assert.equal(
+    messageForStatus(404, 'default', { error: 'not_found' }),
+    ERROR_MESSAGES.generic,
+  )
+})
+
 test('toUserMessage maps unknown errors to generic message', () => {
   assert.equal(toUserMessage(new Error('Internal Server Error')), ERROR_MESSAGES.generic)
   assert.equal(toUserMessage('boom'), ERROR_MESSAGES.generic)

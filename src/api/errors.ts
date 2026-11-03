@@ -64,7 +64,9 @@ export function messageForStatus(
   if (status === 403) return ERROR_MESSAGES.forbidden
   // Domain validation errors (e.g. "code already exists") carry an explicit
   // description from the API; keep it so non-login forms stay informative.
-  const description = body?.error_description || body?.error
+  // Only `error_description` is shown; a bare `error` is a technical code
+  // (e.g. `invalid_request`) and must never reach the user.
+  const description = body?.error_description
   if (
     context !== 'login' &&
     description &&
