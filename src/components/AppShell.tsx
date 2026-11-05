@@ -78,7 +78,7 @@ export function AppShell({ children, title, lede }: Props) {
           {caps.canRequestBranch ? <NavLink to="/my-org/branch-request">Branch request</NavLink> : null}
           <NavLink to="/profile">Profil</NavLink>
           <NavLink to="/change-password">Parol</NavLink>
-          <button type="button" className="linkish" onClick={logout}>
+          <button type="button" className="linkish menu-logout" onClick={logout}>
             Çıxış
           </button>
         </nav>

@@ -84,8 +84,8 @@ export function ProfilePage() {
       const status = (err as { status?: number }).status
       setError(
         status === 401
-          ? 'Sessiya bitib, yenidən daxil ol.'
-          : 'Profil yadda saxlanılmadı. Yenidən cəhd et.',
+          ? 'Sessiya bitib, yenidən daxil olun.'
+          : 'Profil yadda saxlanılmadı. Yenidən cəhd edin.',
       )
       setSubmitting(false)
       return
@@ -109,7 +109,7 @@ export function ProfilePage() {
         <div className="stack-form panel narrow-form">
           <p className="form-error" role="alert">Profil yüklənmədi.</p>
           <button type="button" onClick={() => setReloadKey((k) => k + 1)}>
-            Yenidən cəhd et
+            Yenidən cəhd edin
           </button>
         </div>
       ) : null}
@@ -155,7 +155,7 @@ export function ProfilePage() {
             </label>
             {error ? <p className="form-error" role="alert">{error}</p> : null}
             {success ? <p className="form-success" role="status">{success}</p> : null}
-            <button type="submit">{submitting ? 'Saxlanılır…' : 'Yadda saxla'}</button>
+            <button type="submit">{submitting ? 'Saxlanılır…' : 'Yadda saxlayın'}</button>
           </fieldset>
         </form>
       ) : null}
