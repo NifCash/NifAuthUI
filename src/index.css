@@ -439,12 +439,284 @@ button.secondary {
   font: inherit;
 }
 
+/* ---------- Home: chips, profile lines, navigation cards ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(15, 122, 95, 0.35);
+  border-radius: 999px;
+  background: rgba(15, 122, 95, 0.08);
+  color: var(--accent-deep);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.chip.muted-chip {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--ink-soft);
+}
+
+.profile-lines {
+  margin-top: 0.85rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.profile-lines p {
+  margin: 0.2rem 0 0;
+}
+
+.break-anywhere {
+  overflow-wrap: anywhere;
+}
+
+.nav-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 72px;
+}
+
+.nav-card > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.nav-card-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.nav-card-count {
+  min-width: 1.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.nav-card-count.pending {
+  background: var(--danger);
+  color: #fff;
+}
+
+.nav-card-chevron {
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--ink-soft);
+}
+
+/* ---------- Account page ---------- */
+
+.account-info {
+  margin-top: 1.25rem;
+}
+
+.account-info p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.account-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.account-email {
+  color: var(--ink-soft);
+}
+
+.account-logout {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.logout-button {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--danger);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ---------- Login ---------- */
+
+.form-error-box {
+  padding: 0.65rem 0.8rem;
+  border-left: 3px solid var(--danger);
+  background: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* ---------- Mobile tab bar (hidden on desktop) ---------- */
+
+.tabbar {
+  display: none;
+}
+
 @media (max-width: 640px) {
+  :root {
+    --topbar-h: 56px;
+    --tabbar-h: 60px;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .auth-stage {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+
   .auth-panel {
     padding: 1.75rem 1.25rem;
   }
 
+  .stack-form input,
+  .stack-form select {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  .stack-form button {
+    min-height: 48px;
+  }
+
+  .app-shell {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
   .topbar {
-    padding-inline: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: calc(var(--topbar-h) + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) calc(1rem + env(safe-area-inset-right)) 0
+      calc(1rem + env(safe-area-inset-left));
+  }
+
+  /* Must beat `.topbar nav { display: flex }` (specificity 0,1,1). */
+  .topbar .topbar-nav {
+    display: none;
+  }
+
+  .content {
+    width: calc(100% - 2rem);
+    margin-top: 1.25rem;
+    margin-bottom: 0;
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 1.5rem);
+  }
+
+  .content h1 {
+    overflow-wrap: anywhere;
+  }
+
+  .lede {
+    overflow-wrap: anywhere;
+  }
+
+  .tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: flex;
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--line);
+  }
+
+  .tab {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: var(--tabbar-h);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.35rem 0.25rem;
+    color: var(--ink-soft);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .tab:hover {
+    text-decoration: none;
+  }
+
+  .tab.active {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .tab.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 25%;
+    right: 25%;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--accent);
+  }
+
+  .tab-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tab-icon-wrap {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .tab-badge {
+    position: absolute;
+    top: -6px;
+    left: calc(100% - 8px);
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
   }
 }

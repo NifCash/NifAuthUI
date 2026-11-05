@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { RequireCapability } from './components/RequireCapability'
+import { AccountPage } from './pages/AccountPage'
 import { AdminBranchRequestsPage } from './pages/AdminBranchRequestsPage'
 import { AdminOrgRequestsPage } from './pages/AdminOrgRequestsPage'
 import { BranchRequestPage } from './pages/BranchRequestPage'
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/account" element={<AccountPage />} />
             <Route path="/change-password" element={<ChangePasswordPage />} />
             <Route
               path="/org-request"
