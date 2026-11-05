@@ -105,6 +105,58 @@ export async function changePassword(
   }
 }
 
+export type ProfileResponse = {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  phone: string | null
+  fullName: string
+  isActive: boolean
+}
+
+export type UpdateProfileRequest = {
+  firstName: string
+  lastName: string
+  phone: string | null
+}
+
+export async function fetchProfile(accessToken: string): Promise<ProfileResponse> {
+  const response = await fetch('/api/me', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(await readError(response))
+  }
+
+  return (await response.json()) as ProfileResponse
+}
+
+export async function updateProfile(
+  accessToken: string,
+  body: UpdateProfileRequest,
+): Promise<ProfileResponse> {
+  const response = await fetch('/api/me', {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    throw new Error(await readError(response))
+  }
+
+  return (await response.json()) as ProfileResponse
+}
+
 export async function refreshToken(refreshTokenValue: string): Promise<TokenResponse> {
   const body = new URLSearchParams({
     grant_type: 'refresh_token',
