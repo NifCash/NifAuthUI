@@ -151,7 +151,7 @@ export async function updateProfile(
   })
 
   if (!response.ok) {
-    throw new Error(await readError(response))
+    throw Object.assign(new Error(await readError(response)), { status: response.status })
   }
 
   return (await response.json()) as ProfileResponse

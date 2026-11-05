@@ -80,7 +80,13 @@ export function ProfilePage() {
         phone: trimmedPhone || null,
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Profil yadda saxlanılmadı')
+      // Texniki mətn istifadəçiyə göstərilmir, statusa görə sabit Azərbaycan mesajı
+      const status = (err as { status?: number }).status
+      setError(
+        status === 401
+          ? 'Sessiya bitib, yenidən daxil ol.'
+          : 'Profil yadda saxlanılmadı. Yenidən cəhd et.',
+      )
       setSubmitting(false)
       return
     }
