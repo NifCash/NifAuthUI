@@ -9,6 +9,8 @@ const PHONE_RE = /^\+[1-9]\d{7,14}$/
 export function ProfilePage() {
   const { accessToken, refreshUser } = useAuth()
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -20,6 +22,8 @@ export function ProfilePage() {
   useEffect(() => {
     if (!accessToken) return
     let cancelled = false
+    setLoading(true)
+    setLoadFailed(false)
 
     fetchProfile(accessToken)
       .then((profile) => {
@@ -28,18 +32,19 @@ export function ProfilePage() {
         setFirstName(profile.firstName ?? '')
         setLastName(profile.lastName ?? '')
         setPhone(profile.phone ?? '')
+        setLoading(false)
       })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Profil yüklənmədi')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
+      .catch(() => {
+        if (cancelled) return
+        // Profil yüklənməyibsə forma göstərilmir, ona görə boş telefon heç vaxt göndərilmir
+        setLoadFailed(true)
+        setLoading(false)
       })
 
     return () => {
       cancelled = true
     }
-  }, [accessToken])
+  }, [accessToken, reloadKey])
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
@@ -74,10 +79,18 @@ export function ProfilePage() {
         lastName: trimmedLast,
         phone: trimmedPhone || null,
       })
-      await refreshUser()
-      setSuccess('Profil yadda saxlanıldı.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Profil yadda saxlanılmadı')
+      setSubmitting(false)
+      return
+    }
+
+    // Məlumat artıq yazılıb; refresh xətası ayrıca mesajla göstərilir
+    try {
+      await refreshUser()
+      setSuccess('Profil yadda saxlanıldı.')
+    } catch {
+      setError('Profil yadda saxlandı, amma səhifə yenilənmədi.')
     } finally {
       setSubmitting(false)
     }
@@ -85,50 +98,61 @@ export function ProfilePage() {
 
   return (
     <AppShell title="Profil" lede="Şəxsi məlumatlarınızı buradan yeniləyə bilərsiniz.">
-      <form className="stack-form panel narrow-form" onSubmit={onSubmit} noValidate>
-        <fieldset disabled={loading || submitting} style={{ display: 'grid', gap: '1rem', border: 0, margin: 0, padding: 0 }}>
-          <label>
-            E-poçt (dəyişdirilə bilməz)
-            <input type="email" value={email} readOnly autoComplete="email" />
-          </label>
-          <label>
-            Ad
-            <input
-              type="text"
-              autoComplete="given-name"
-              value={firstName}
-              maxLength={NAME_MAX}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Soyad
-            <input
-              type="text"
-              autoComplete="family-name"
-              value={lastName}
-              maxLength={NAME_MAX}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Telefon (ixtiyari)
-            <input
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="+994501234567"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </label>
-          {error ? <p className="form-error" role="alert">{error}</p> : null}
-          {success ? <p className="form-success" role="status">{success}</p> : null}
-          <button type="submit">{submitting ? 'Saxlanılır…' : 'Yadda saxla'}</button>
-        </fieldset>
-      </form>
+      {loading ? <p>Yüklənir…</p> : null}
+      {!loading && loadFailed ? (
+        <div className="stack-form panel narrow-form">
+          <p className="form-error" role="alert">Profil yüklənmədi.</p>
+          <button type="button" onClick={() => setReloadKey((k) => k + 1)}>
+            Yenidən cəhd et
+          </button>
+        </div>
+      ) : null}
+      {!loading && !loadFailed ? (
+        <form className="stack-form panel narrow-form" onSubmit={onSubmit} noValidate>
+          <fieldset disabled={submitting} style={{ display: 'grid', gap: '1rem', border: 0, margin: 0, padding: 0 }}>
+            <label>
+              E-poçt (dəyişdirilə bilməz)
+              <input type="email" value={email} readOnly autoComplete="email" />
+            </label>
+            <label>
+              Ad
+              <input
+                type="text"
+                autoComplete="given-name"
+                value={firstName}
+                maxLength={NAME_MAX}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Soyad
+              <input
+                type="text"
+                autoComplete="family-name"
+                value={lastName}
+                maxLength={NAME_MAX}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Telefon (ixtiyari)
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="+994501234567"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </label>
+            {error ? <p className="form-error" role="alert">{error}</p> : null}
+            {success ? <p className="form-success" role="status">{success}</p> : null}
+            <button type="submit">{submitting ? 'Saxlanılır…' : 'Yadda saxla'}</button>
+          </fieldset>
+        </form>
+      ) : null}
     </AppShell>
   )
 }
