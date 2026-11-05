@@ -11,6 +11,7 @@ import { LoginPage } from './pages/LoginPage'
 import { MyOrgPage } from './pages/MyOrgPage'
 import { OrgRequestPage } from './pages/OrgRequestPage'
 import { OrgRolesPage } from './pages/OrgRolesPage'
+import { ProfilePage } from './pages/ProfilePage'
 import { RegisterPage } from './pages/RegisterPage'
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/change-password" element={<ChangePasswordPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route
               path="/org-request"
               element={
